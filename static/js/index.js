@@ -31,7 +31,8 @@ const {
   Grid,
   Link,
   Divider,
-  Dialog,DialogTitle,MuiDialogTitle,TextField
+  Dialog,DialogTitle,MuiDialogTitle,TextField,
+  FormControlLabel
 } = MaterialUI;
 
 const theme = responsiveFontSizes(createMuiTheme({
@@ -120,7 +121,11 @@ function ContactRow(props){
   const classes = useStyles();
   const handleChange = (event) => {
     let newinfo=props.info;
-    newinfo[event.target.id]=event.target.value;
+    if(event.target.id!="with_mask"){
+      newinfo[event.target.id]=event.target.value;
+    } else {
+      newinfo[event.target.id]=event.target.checked;
+    }
     props.updatedata(newinfo);
   };
   return (
@@ -134,12 +139,11 @@ function ContactRow(props){
         onChange={handleChange}
     /></Grid>
     <Grid item xs={5} sm={5} md={5}>
-      <TextField
-        id="with_mask"
-        label="是否戴口罩"
-        value={props.info.with_mask?"是":"否"}
-        margin="dense"
-        onChange={handleChange}
+      <FormControlLabel
+        control={
+          <Checkbox  checked={props.info.with_mask} color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
+        }
+        label="已戴口罩"
     /></Grid>
     <Grid item xs={2} sm={2} md={2} style={{marginLeft:"-1.2em"}}>
       <IconButton  disableRipple color="primary" onClick={()=>{props.handleDeleteContact();props.update();}}>
@@ -245,10 +249,13 @@ function AddDialog(props) {
   }
   const handleChange = (event) =>{
     let newinfo=info;
-    newinfo[event.target.id]=event.target.value;
+    if(event.target.id!="with_mask"){
+      newinfo[event.target.id]=event.target.value;
+    } else {
+      newinfo[event.target.id]=event.target.checked;
+    }
     setinfo({...newinfo});
   };
-
   return (
     <Dialog maxWidth='xs' onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
       <DialogTitle id="simple-dialog-title">
@@ -267,14 +274,19 @@ function AddDialog(props) {
         <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" label="地点" />
         <TextField fullWidth required className={classes.textfield} value={info.traffic} onChange={handleChange} name="traffic" id="traffic" label="交通方式" />
         <TextField fullWidth required className={classes.textfield} value={info.todo} onChange={handleChange} name="todo" id="todo" label="做什么事" />
-        <TextField fullWidth required className={classes.textfield} value={info.with_mask?"是":"否"} onChange={handleChange} name="with_mask" id="with_mask" label="是否戴口罩" />
+        <FormControlLabel
+          control={
+            <Checkbox  checked={info.with_mask} color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
+          }
+          label="已戴口罩"
+        />
         <TextField fullWidth required className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
 
         <List>
           <Grid container spacing={4}>
             {
               contacts?.map((contact,idx) => (
-              <Grid item key={idx} xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
+              <Grid item key={idx} xs={12} sm={12} md={12} style={{marginTop:'15px'}}>
               <Paper elevation={4}>
                 <ContactRow info={contact} setinfo={updatecontacts(idx)} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} updatedata={updatecontacts(idx)}/>
               </Paper></Grid>))
@@ -342,7 +354,11 @@ function EditDialog(props) {
   }
   const handleChange = (event) =>{
     let newinfo=info;
-    newinfo[event.target.id]=event.target.value;
+    if(event.target.id!="with_mask"){
+      newinfo[event.target.id]=event.target.value;
+    } else {
+      newinfo[event.target.id]=event.target.checked;
+    }
     updatedata(newinfo);
   };
   const handleContactChangeFactory = (idx)=>{
@@ -368,7 +384,15 @@ function EditDialog(props) {
         <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" label="地点" />
         <TextField fullWidth required className={classes.textfield} value={info.traffic} onChange={handleChange} name="traffic" id="traffic" label="交通方式" />
         <TextField fullWidth required className={classes.textfield} value={info.todo} onChange={handleChange} name="todo" id="todo" label="做什么事" />
-        <TextField fullWidth required className={classes.textfield} value={info.with_mask?"是":"否"} onChange={handleChange} name="with_mask" id="with_mask" label="是否戴口罩" />
+        {
+          // <TextField fullWidth required className={classes.textfield} value={info.with_mask?"是":"否"} onChange={handleChange} name="with_mask" id="with_mask" label="是否戴口罩" />
+        }
+        <FormControlLabel
+          control={
+            <Checkbox  checked={info.with_mask} color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
+          }
+          label="已戴口罩"
+        />
         <TextField fullWidth required className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
 
         <List>
@@ -505,7 +529,6 @@ function Album(props) {
 
   const handleClickEdit = (info) => {
     setEditinfo(info);
-    // console.log(info)
     setOpenEdit(true);
   };
 
@@ -515,7 +538,7 @@ function Album(props) {
 
   const classes = useStyles();
   const data=recorddata;
-
+  console.log(data.map(e=>e.id));
   return (
     <React.Fragment>
       <CssBaseline />
@@ -542,7 +565,7 @@ function Album(props) {
                 </CardContent>
               </Card>
             </Grid>
-            {data.reverse().map((info) => (<RecordItem info={info} key={info.id} editcallback={()=>handleClickEdit(info)} />))}
+            {data.slice().reverse().map((info) => (<RecordItem info={info} key={info.id} editcallback={()=>handleClickEdit({...info})} />))}
           </Grid>
         </Container>
       </main>
@@ -563,7 +586,7 @@ function export_records(){
   document.body.removeChild(link);
 }
 
-let data=JSON.parse(localStorage['contact_info']);
+let data=JSON.parse(localStorage['contact_info']??"[]");
 // let data=[
 //   {
 //     id:5,
