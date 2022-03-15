@@ -89,8 +89,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-// const data = [];
 
 function Busy() {
   const classes = useStyles();
@@ -101,6 +99,19 @@ function Free(){
   const classes = useStyles();
   return (<Icon className={classes.iconcold}>ac_unit</Icon>)
 }
+
+// function TimePicker(props){
+//   const [startDate, setStartDate] = React.useState(new Date());
+//   return (
+//     <DatePicker
+//       selected={startDate}
+//       onChange={(date) => setStartDate(date)}
+//       timeInputLabel=":"
+//       dateFormat="MM/dd/yyyy hh:mm"
+//       showTimeInput
+//     />
+//   );
+// }
 
 function ContactRow(props){
   const classes = useStyles();
@@ -172,40 +183,35 @@ function AddDialog(props) {
   const comment=React.useRef("备注");
   const [need_update,setupdate]=React.useState(false);
   const contacts=React.useRef([{
-    name:"打饭阿姨",
+    name:"",
     relation:"",
     with_mask:false,
-    gender:"女",
-    telphone:"11101011010",
-    organization:"餐饮服务部",
-  },{
-    name:"打饭大叔",
-    relation:"",
-    with_mask:true,
-    gender:"男",
-    telphone:"11101011010",
-    organization:"餐饮服务部",
+    gender:"",
+    telphone:"",
+    organization:"",
   }]);
   const handleSubmit = ()=>{
-    // debugger
-    let promise=fetch('/setstate',{
-      method:"POST",
-      body:JSON.stringify({
-        "IP":IP.current.getElementsByTagName('input')[0].value,
-        "MAC":MAC.current.getElementsByTagName('input')[0].value,
-        "sshport":Number(sshport.current.getElementsByTagName('input')[0].value),
-        "gpunum":Number(gpunum),
-        "nickname":nickname.current.getElementsByTagName('input')[0].value,
-        "gpuversions":gpuversions.current.getElementsByTagName('input')[0].value,
-      }),
-      headers:{
-        "Content-Type":"application/json"
-      }
-    })
-    onClose();
-    promise.then((resp)=>{
-      location.reload(true)
-    });
+    let data={
+      time:time.current.getElementsByTagName('input')[0].value,
+      location:location.current.getElementsByTagName('input')[0].value,
+      traffic:traffic.current.getElementsByTagName('input')[0].value,
+      todo:todo.current.getElementsByTagName('input')[0].value,
+      with_mask:with_mask.current.getElementsByTagName('input')[0].value,
+      comment:comment.current.getElementsByTagName('input')[0].value,
+      close_contacts:contacts.current,
+    };
+    let valid=true;
+    // Validation
+    // console.log(data);
+    // window.var_data=data;
+    if(valid){
+      data.id=next_record_id;
+      next_record_id+=1;
+      props.updatecallback(data);
+      onClose();
+    } else {
+      // set err
+    }
   };
   const handleAddContact = ()=>{
     contacts.current.push({
@@ -235,12 +241,16 @@ function AddDialog(props) {
         </IconButton>
         ) : null}
       </DialogTitle>
-      <form className={classes.form} noValidate autoComplete="off" style={{textAlign:'center'}}>
+      <form className={classes.form} autoComplete="off" style={{textAlign:'center'}}>
         <TextField fullWidth required className={classes.textfield} ref={time} name="time" id="time" label="时间" defaultValue=""/>
+        {
+          // <TimePicker></TimePicker>
+        }
         <TextField fullWidth required className={classes.textfield} ref={location} name="location" id="location" label="地点" defaultValue=""/>
         <TextField fullWidth required className={classes.textfield} ref={traffic} name="traffic" id="traffic" label="交通方式" defaultValue="无"/>
         <TextField fullWidth required className={classes.textfield} ref={todo} name="todo" id="todo" label="做什么事" defaultValue=""/>
         <TextField fullWidth required className={classes.textfield} ref={with_mask} name="with_mask" id="with_mask" label="是否戴口罩"/>
+        <TextField fullWidth required className={classes.textfield} ref={comment} name="comment" id="comment" label="备注"/>
 
         <List>
           <Grid container spacing={4}>
@@ -263,29 +273,20 @@ function AddDialog(props) {
 
 function EditDialog(props) {
   const classes = useStyles();
-  const info=props.defaultinfo;
   const { onClose, open } = props;
   const handleClose = () => {
     onClose();
   };
-  const IP=React.useRef(null);
-  const MAC=React.useRef(null);
-  const sshport=React.useRef(null);
-  const gpunum=React.useRef(null);
-  // const [gpunum,setgpunum]=React.useState(info.gpunum);
-  const nickname=React.useRef(null);
-  let versionstr='';
-  if(info.gpus){
-    let versions=info.gpus.map((e)=>e[0]);
-    for (let i=0;i<versions.length;++i){
-      if(i>0)
-        versionstr+=';';
-      versionstr+=versions[i];
-    }
-  } else {
-    versionstr='';
-  }
-  const gpuversions=React.useRef(null);
+  const info=props.defaultinfo;
+  const time=React.useRef("时间");
+  const location=React.useRef("地点");
+  const traffic=React.useRef("交通工具");
+  const todo=React.useRef("做什么事");
+  const with_mask=React.useRef(false);
+  const comment=React.useRef("备注");
+  const contacts=React.useRef(info.close_contacts??[]);
+  const [need_update,setupdate]=React.useState(false);
+
   const handleSubmit = ()=>{
     // debugger
     let promise=fetch('/editstate',{
@@ -308,14 +309,27 @@ function EditDialog(props) {
       location.reload(true)
     });
   };
-  const handlegpunum = (e)=>{
-    setgpunum(e.target.value);
+  const handleAddContact = ()=>{
+    contacts.current.push({
+      name:"",
+      relation:"",
+      with_mask:false,
+      gender:"",
+      telphone:"",
+      organization:"",
+    });
+    setupdate(!need_update);
+  };
+  const handleDeleteContactFactory = (idx)=>{
+    return ()=>{
+      contacts.current.splice(idx,1);
+    };
   };
 
   return (
     <Dialog maxWidth='xs' onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
       <DialogTitle id="simple-dialog-title">
-        Edit Server
+        编辑记录
         {onClose ? (
         <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
           <Icon>close</Icon>
@@ -323,22 +337,38 @@ function EditDialog(props) {
         ) : null}
       </DialogTitle>
       <form className={classes.form} noValidate autoComplete="off" style={{textAlign:'center'}}>
-        <TextField fullWidth required className={classes.textfield} ref={IP} name="IP" id="IP" label="IP" defaultValue={info.IP}/>
-        <TextField fullWidth required className={classes.textfield} ref={MAC} name="MAC" id="MAC" label="MAC" defaultValue={info.MAC}/>
-        <TextField fullWidth required className={classes.textfield} ref={sshport} name="sshport" id="sshport" label="SSH Port" defaultValue={info.sshport}/>
-        {/*<TextField fullWidth required className={classes.textfield} name="gpunum" id="gpunum" label="GPU num" value={gpunum} onChange={handlegpunum}/>*/}
-        <TextField fullWidth required className={classes.textfield} ref={gpunum} name="gpunum" id="gpunum" label="GPU num" defaultValue={info.gpunum}/>
-        <TextField fullWidth          className={classes.textfield} ref={nickname} name="nickname" id="nickname" label="Nickname" defaultValue={info.nickname}/>
-        <TextField fullWidth required className={classes.textfield} ref={gpuversions} name="gpuversions" id="gpuversions" defaultValue={versionstr} label="GPU Versions" helperText="Split use ; eg. GTX1080;Titan X;V100"/>
-        <Button size="large" variant="contained" color="primary" onClick={handleSubmit}>Add</Button>
+        <TextField fullWidth required className={classes.textfield} ref={time} name="time" id="time" label="时间" defaultValue={info.time}/>
+        {
+          // <TimePicker></TimePicker>
+        }
+        <TextField fullWidth required className={classes.textfield} ref={location} name="location" id="location" label="地点" defaultValue={info.location}/>
+        <TextField fullWidth required className={classes.textfield} ref={traffic} name="traffic" id="traffic" label="交通方式" defaultValue={info.traffic}/>
+        <TextField fullWidth required className={classes.textfield} ref={todo} name="todo" id="todo" label="做什么事" defaultValue={info.todo}/>
+        <TextField fullWidth required className={classes.textfield} ref={with_mask} name="with_mask" id="with_mask" label="是否戴口罩" defaultValue={info.with_mask}/>
+        <TextField fullWidth required className={classes.textfield} ref={comment} name="comment" id="comment" label="备注" defaultValue={info.comment}/>
+
+        <List>
+          <Grid container spacing={4}>
+            {
+              contacts.current.map((contact,idx) => (
+              <Grid item key={idx} xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
+              <Paper elevation={4}>
+                <ContactRow info={contact} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} update={()=>setupdate(!need_update)}/>
+              </Paper></Grid>))
+            }
+          </Grid>
+        </List>
+        <Button size="large" variant="contained" color="primary" disableRipple onClick={handleAddContact} style={{marginTop:'15px',marginRight:'40px'}}>添加接触者</Button>
+        <Button size="large" variant="contained" color="primary" onClick={handleSubmit} style={{marginTop:'15px'}}>确认</Button>
       </form>
     </Dialog>
   );
 }
 
 function show_time(timestamp){
-  const date=new Date(timestamp);
-  return date.toLocaleString();
+  // const date=new Date(timestamp);
+  // return date.toLocaleString();
+  return String(timestamp)
 }
 
 function ContactDisplayItem(props){
@@ -351,6 +381,7 @@ function RecordItem(props) {
   const info=props.info;
   const handleClickEdit=props.editcallback;
   const classes=useStyles();
+  console.log(info);
   return (
   <Grid item xs={12} sm={6} md={4}>
     <Card className={classes.card}>
@@ -405,12 +436,23 @@ function Album(props) {
   const [openAdd, setOpenAdd] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
   const [editinfo, setEditinfo] = React.useState({});
+  const [recorddata, setrecorddata_impl] = React.useState(props.data);
+
+  const setrecorddata = (item)=>{
+    localStorage['contact_info']=JSON.stringify(item);
+    setrecorddata_impl(item);
+  };
+
   const handleClickAdd = () => {
     setOpenAdd(true);
   };
 
   const handleCloseAdd = () => {
     setOpenAdd(false);
+  };
+
+  const append_data = (item) => {
+    setrecorddata([...recorddata,item]);
   };
 
   const handleClickEdit = (info) => {
@@ -424,8 +466,7 @@ function Album(props) {
   };
 
   const classes = useStyles();
-  const data=props.data;
-
+  const data=recorddata;
 
   return (
     <React.Fragment>
@@ -446,7 +487,7 @@ function Album(props) {
                   <Typography gutterBottom variant="h4" component="h2">
                     新建记录
                   </Typography>
-                  <IconButton color="primary" onClick={handleClickAdd}>
+                  <IconButton color="primary" onClick={handleClickAdd} >
                     <Icon style={{fontSize:'3em'}}>add_circle_outline</Icon>
                   </IconButton>
                 </CardContent>
@@ -456,41 +497,14 @@ function Album(props) {
           </Grid>
         </Container>
       </main>
-      <AddDialog open={openAdd} onClose={handleCloseAdd} />
+      <AddDialog open={openAdd} onClose={handleCloseAdd} updatecallback={append_data}/>
       <EditDialog open={openEdit} onClose={handleCloseEdit} defaultinfo={editinfo} />
     </React.Fragment>
   );
 }
 
+// let data=JSON.parse(localStorage['contact_info']);
 let data=[
-  // {
-  //   id:1,
-  //   nickname:"PC-1",
-  //   IP:"192.168.1.104",
-  //   MAC:"AA:BB:CC:DD:11:22",
-  //   sshport:2254,
-  //   gpunum:4,
-  //   // users:['cka','czm','aaa','none']
-  //   gpus:[['1080','cka'],['1080','czm'],['1080ti','aaa'],['1080ti','aaa']],
-  // },{
-  //   id:3,
-  //   nickname:"PC-A",
-  //   IP:"192.168.1.114",
-  //   MAC:"AA:EE:CC:DD:11:33",
-  //   sshport:88,
-  //   gpunum:2,
-  //   gpus:[['2080','wt'],['1080ti','wt']],
-  //   // users:['wt','wt']
-  // },{
-  //   id:4,
-  //   nickname:"PC-5",
-  //   IP:"192.168.1.139",
-  //   MAC:"AA:BB:CC:DD:99:88",
-  //   sshport:22,
-  //   gpunum:3,
-  //   gpus:[['2080','none'],['3090','none'],['3090','none']],
-  //   // users:['none','none','none']
-  // },{
   {
     id:5,
     time:1647311997610,
@@ -519,6 +533,8 @@ let data=[
     ]
   }
 ]
+
+let next_record_id=Math.max(...(data.map(e=>e.id)))+1;
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
