@@ -102,55 +102,56 @@ function Free(){
   return (<Icon className={classes.iconcold}>ac_unit</Icon>)
 }
 
-function NewEmptyContactRow(){
-  const classes = useStyles();
-  return <span/>
-}
 function ContactRow(props){
   const classes = useStyles();
-
   return (
-    <Grid container spacing={3}>
-    <Grid item xs={6} sm={4} md={3}>
+    <Grid container spacing={2}>
+    <Grid item xs={5} sm={5} md={5}>
       <TextField
         id="name"
         label="姓名/身份"
-        defaultValue={props.info.current.name}
+        defaultValue={props.info.name}
         margin="dense"
     /></Grid>
+    <Grid item xs={5} sm={5} md={5}>
+      <TextField
+        id="with_mask"
+        label="是否戴口罩"
+        defaultValue={props.info.with_mask?"是":"否"}
+        margin="dense"
+    /></Grid>
+    <Grid item xs={2} sm={2} md={2} style={{marginLeft:"-1.2em"}}>
+      <IconButton  disableRipple color="primary" onClick={()=>{props.handleDeleteContact();props.update();}}>
+        <Icon style={{fontSize:'1.2em'}}>delete</Icon>
+      </IconButton>
+    </Grid>
+
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="relation"
         label="关系"
-        defaultValue={props.info.current.relation}
-        margin="dense"
-    /></Grid>
-    <Grid item xs={6} sm={4} md={3}>
-      <TextField
-        id="with_mask"
-        label="是否戴口罩"
-        defaultValue={props.info.current.with_mask?"是":"否"}
+        defaultValue={props.info.relation}
         margin="dense"
     /></Grid>
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="gender"
         label="性别"
-        defaultValue={props.info.current.gender}
+        defaultValue={props.info.gender}
         margin="dense"
     /></Grid>
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="telphone"
         label="电话号码"
-        defaultValue={props.info.current.telphone}
+        defaultValue={props.info.telphone}
         margin="dense"
     /></Grid>
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="organization"
         label="学院/单位"
-        defaultValue={props.info.current.organization}
+        defaultValue={props.info.organization}
         margin="dense"
     /></Grid>
     </Grid>
@@ -169,21 +170,22 @@ function AddDialog(props) {
   const todo=React.useRef("做什么事");
   const with_mask=React.useRef(false);
   const comment=React.useRef("备注");
-  const contacts=[React.useRef({
+  const [need_update,setupdate]=React.useState(false);
+  const contacts=React.useRef([{
     name:"打饭阿姨",
     relation:"",
     with_mask:false,
     gender:"女",
     telphone:"11101011010",
     organization:"餐饮服务部",
-  }),React.useRef({
+  },{
     name:"打饭大叔",
     relation:"",
     with_mask:true,
     gender:"男",
     telphone:"11101011010",
     organization:"餐饮服务部",
-  }),];
+  }]);
   const handleSubmit = ()=>{
     // debugger
     let promise=fetch('/setstate',{
@@ -205,8 +207,22 @@ function AddDialog(props) {
       location.reload(true)
     });
   };
-  const handlegpunum = (e)=>{
-    setgpunum(event.target.value);
+  const handleAddContact = ()=>{
+    contacts.current.push({
+      name:"",
+      relation:"",
+      with_mask:false,
+      gender:"",
+      telphone:"",
+      organization:"",
+    });
+    setupdate(!need_update);
+  };
+
+  const handleDeleteContactFactory = (idx)=>{
+    return ()=>{
+      contacts.current.splice(idx,1);
+    };
   };
 
   return (
@@ -229,16 +245,16 @@ function AddDialog(props) {
         <List>
           <Grid container spacing={4}>
             {
-              contacts.map((contact,idx) => (
-              <Grid item xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
-              <Paper elevation={4} key={idx}>
-                <ContactRow info={contact}/>
+              contacts.current.map((contact,idx) => (
+              <Grid item key={idx} xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
+              <Paper elevation={4}>
+                <ContactRow info={contact} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} update={()=>setupdate(!need_update)}/>
               </Paper></Grid>))
             }
-            <NewEmptyContactRow key={-1}/>
           </Grid>
         </List>
 
+        <Button size="large" variant="contained" color="primary" disableRipple onClick={handleAddContact} style={{marginTop:'15px',marginRight:'40px'}}>添加接触者</Button>
         <Button size="large" variant="contained" color="primary" onClick={handleSubmit} style={{marginTop:'15px'}}>确认</Button>
       </form>
     </Dialog>
