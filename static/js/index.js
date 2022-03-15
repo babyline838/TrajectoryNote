@@ -146,7 +146,7 @@ function ContactRow(props){
         label="已戴口罩"
     /></Grid>
     <Grid item xs={2} sm={2} md={2} style={{marginLeft:"-1.2em"}}>
-      <IconButton  disableRipple color="primary" onClick={()=>{props.handleDeleteContact();props.update();}}>
+      <IconButton  disableRipple color="primary" onClick={()=>{props.handleDeleteContact();}}>
         <Icon style={{fontSize:'1.2em'}}>delete</Icon>
       </IconButton>
     </Grid>
@@ -338,13 +338,15 @@ function EditDialog(props) {
     setupdate(!need_update);
   };
   const setcontacts = (list)=>{
-    updatedata(list);
+    updatedata({...info,close_contacts:list});
   };
 
   const handleDeleteContactFactory = (idx)=>{
     return ()=>{
       // contacts.splice(idx,1);
-      setcontacts(contacts.filter((e,i)=>i!=idx));
+      let newcontacts=contacts.filter((e,i)=>i!=idx)
+      // updatedata({...info,clo});
+      setcontacts(newcontacts);
     };
   };
   const updatecontacts = (idx)=>{
@@ -361,11 +363,6 @@ function EditDialog(props) {
     }
     updatedata(newinfo);
   };
-  const handleContactChangeFactory = (idx)=>{
-    return (item)=>{
-
-    }
-  }
   return (
     <Dialog maxWidth='xs' onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
       <DialogTitle id="simple-dialog-title">
@@ -401,7 +398,7 @@ function EditDialog(props) {
               contacts?.map((contact,idx) => (
               <Grid item key={idx} xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
               <Paper elevation={4}>
-                <ContactRow info={contact} setinfo={updatecontacts(idx)} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} updatedata={updatecontacts(idx)}/>
+                <ContactRow info={contact} setinfo={(data)=>setcontacts(data)} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} updatedata={updatecontacts(idx)}/>
               </Paper></Grid>))
             }
           </Grid>
@@ -499,12 +496,16 @@ function Album(props) {
   };
 
   const append_data = (item) => {
-    console.log(item)
     setrecorddata([...recorddata,item]);
+  };
+
+  const set_data = (list) => {
+    setrecorddata_impl(list);
   };
 
   const modify_data = (item) => {
     let data=[];
+    debugger
     for(let i=0;i<recorddata.length;++i){
       if(item.id==recorddata[i].id){
         data.push(item);
@@ -538,7 +539,6 @@ function Album(props) {
 
   const classes = useStyles();
   const data=recorddata;
-  console.log(data.map(e=>e.id));
   return (
     <React.Fragment>
       <CssBaseline />
@@ -570,7 +570,7 @@ function Album(props) {
         </Container>
       </main>
       <AddDialog open={openAdd} onClose={handleCloseAdd} updatecallback={append_data}/>
-      <EditDialog open={openEdit} onClose={handleCloseEdit} updatecallback={modify_data_save} updatedata={modify_data} defaultinfo={editinfo} />
+      <EditDialog open={openEdit} onClose={handleCloseEdit} updatecallback={modify_data_save} updatedata={modify_data} setdata={set_data} defaultinfo={editinfo} />
     </React.Fragment>
   );
 }
