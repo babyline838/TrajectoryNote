@@ -524,7 +524,7 @@ function Album(props) {
           <Typography variant="h6" color="inherit" noWrap className={classes.title}>
             行程记录本
           </Typography>
-          <Button color="inherit"><Icon>get_app</Icon>导出</Button>
+          <Button color="inherit" onClick={export_records}><Icon>get_app</Icon>导出</Button>
         </Toolbar>
       </AppBar>
       <main>
@@ -552,36 +552,47 @@ function Album(props) {
   );
 }
 
-// let data=JSON.parse(localStorage['contact_info']);
-let data=[
-  {
-    id:5,
-    time:1647311997610,
-    location:"第四餐饮大楼2楼",
-    traffic:"无",
-    todo:"早餐",
-    with_mask:true,
-    comment:"鸡蛋",
-    close_contacts:[
-      {
-        name:"打饭阿姨",
-        relation:"",
-        with_mask:false,
-        gender:"女",
-        telphone:"11101011010",
-        organization:"餐饮服务部",
-      },
-      {
-        name:"打饭大叔",
-        relation:"",
-        with_mask:true,
-        gender:"男",
-        telphone:"11101011010",
-        organization:"餐饮服务部",
-      }
-    ]
-  }
-]
+// TODO: Format output data into csv
+function export_records(){
+  let data=localStorage['contact_info'];
+  let uri = 'data:text/json;charset=utf-8,' + encodeURIComponent(data);
+  let link=document.createElement("a");
+  link.href=uri;
+  link.download="行程记录.json";
+  link.click();
+  document.body.removeChild(link);
+}
+
+let data=JSON.parse(localStorage['contact_info']);
+// let data=[
+//   {
+//     id:5,
+//     time:1647311997610,
+//     location:"第四餐饮大楼2楼",
+//     traffic:"无",
+//     todo:"早餐",
+//     with_mask:true,
+//     comment:"鸡蛋",
+//     close_contacts:[
+//       {
+//         name:"打饭阿姨",
+//         relation:"",
+//         with_mask:false,
+//         gender:"女",
+//         telphone:"11101011010",
+//         organization:"餐饮服务部",
+//       },
+//       {
+//         name:"打饭大叔",
+//         relation:"",
+//         with_mask:true,
+//         gender:"男",
+//         telphone:"11101011010",
+//         organization:"餐饮服务部",
+//       }
+//     ]
+//   }
+// ]
 
 let next_record_id=Math.max(...(data.map(e=>e.id)))+1;
 
