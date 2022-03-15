@@ -1,6 +1,6 @@
 /**
-- Record := Time, Location, Traffic, ToDo, WearMask, Comment, [] Contactors
-- Contactor := Name, Relationship,  WearMask, Gender, Tel, Organization
+- Record := Time, Location, Traffic, ToDo, WearMask, Comment, [] Contacts
+- Contact := Name, Relationship,  WearMask, Gender, Tel, Organization
 **/
 //
 const {
@@ -239,17 +239,28 @@ function EditDialog(props) {
   );
 }
 
+function show_time(timestamp){
+  const date=new Date(timestamp);
+  return date.toLocaleString();
+}
+
+function ContactDisplayItem(props){
+  const info=props.info;
+  const classes=useStyles();
+  return
+}
+
 function RecordItem(props) {
   const info=props.info;
   const handleClickEdit=props.editcallback;
   const classes=useStyles();
   return (
-  <Grid item key={info.id} xs={12} sm={6} md={4}>
+  <Grid item xs={12} sm={6} md={4}>
     <Card className={classes.card}>
       <CardContent className={classes.cardContent}>
         <div display='inline-flex'>
           <Typography variant="h5" className='h2' style={{display:"inline-flex"}}>
-            {info.nickname}
+            {info.location}
           </Typography>
           <IconButton aria-label="edit" color="primary" size='small' onClick={handleClickEdit} style={{display:"inline-flex",float:"right"}}>
             <Icon>edit</Icon>
@@ -257,27 +268,30 @@ function RecordItem(props) {
         </div>
         <div>
           <Typography variant="body1">
-            IP &nbsp;&nbsp;&nbsp; addr: {info.IP}
+            时间: {show_time(info.time)}
           </Typography>
           <Typography variant="body1">
-            MAC addr: {info.MAC}
+            地点: {info.location}
           </Typography>
           <Typography variant="body1">
-            SSH port: {info.sshport}
+            交通方式: {info.traffic}
           </Typography>
           <Typography variant="body1">
-            GPU num: {info.gpunum}
+            做什么事: {info.todo}
+          </Typography>
+          <Typography variant="body1">
+            是否戴了口罩: {info.with_mask?"是":"否"}
+          </Typography>
+          <Typography variant="body1">
+            备注: {info.comment}
           </Typography>
           <Divider />
           <List dense={true}>
             {
-              info.gpus.map((gpu)=>(
-                <React.Fragment>
+              info.close_contacts.map((contact,idx)=>(
+                <React.Fragment key={idx}>
                 <ListItem>
-                  <ListItemIcon>
-                    {gpu[1]=='none'? <Free/> : <Busy/>}
-                  </ListItemIcon>
-                  <ListItemText primary={gpu[0]+" | "+gpu[1]}/>
+                  <ListItemText primary={contact.name}/>
                 </ListItem>
                 <Divider />
                 </React.Fragment>
@@ -341,7 +355,7 @@ function Album(props) {
                 </CardContent>
               </Card>
             </Grid>
-            {data.reverse().map((info) => (<RecordItem info={info} editcallback={()=>handleClickEdit(info)} />))}
+            {data.reverse().map((info) => (<RecordItem info={info} key={info.id} editcallback={()=>handleClickEdit(info)} />))}
           </Grid>
         </Container>
       </main>
@@ -352,34 +366,53 @@ function Album(props) {
 }
 
 let data=[
+  // {
+  //   id:1,
+  //   nickname:"PC-1",
+  //   IP:"192.168.1.104",
+  //   MAC:"AA:BB:CC:DD:11:22",
+  //   sshport:2254,
+  //   gpunum:4,
+  //   // users:['cka','czm','aaa','none']
+  //   gpus:[['1080','cka'],['1080','czm'],['1080ti','aaa'],['1080ti','aaa']],
+  // },{
+  //   id:3,
+  //   nickname:"PC-A",
+  //   IP:"192.168.1.114",
+  //   MAC:"AA:EE:CC:DD:11:33",
+  //   sshport:88,
+  //   gpunum:2,
+  //   gpus:[['2080','wt'],['1080ti','wt']],
+  //   // users:['wt','wt']
+  // },{
+  //   id:4,
+  //   nickname:"PC-5",
+  //   IP:"192.168.1.139",
+  //   MAC:"AA:BB:CC:DD:99:88",
+  //   sshport:22,
+  //   gpunum:3,
+  //   gpus:[['2080','none'],['3090','none'],['3090','none']],
+  //   // users:['none','none','none']
+  // },{
   {
-    id:1,
-    nickname:"PC-1",
-    IP:"192.168.1.104",
-    MAC:"AA:BB:CC:DD:11:22",
-    sshport:2254,
-    gpunum:4,
-    // users:['cka','czm','aaa','none']
-    gpus:[['1080','cka'],['1080','czm'],['1080ti','aaa'],['1080ti','aaa']],
-  },{
-    id:3,
-    nickname:"PC-A",
-    IP:"192.168.1.114",
-    MAC:"AA:EE:CC:DD:11:33",
-    sshport:88,
-    gpunum:2,
-    gpus:[['2080','wt'],['1080ti','wt']],
-    // users:['wt','wt']
-  },{
-    id:4,
-    nickname:"PC-5",
-    IP:"192.168.1.139",
-    MAC:"AA:BB:CC:DD:99:88",
-    sshport:22,
-    gpunum:3,
-    gpus:[['2080','none'],['3090','none'],['3090','none']],
-    // users:['none','none','none']
-  },
+    id:5,
+    time:1647311997610,
+    location:"第四餐饮大楼2楼",
+    traffic:"无",
+    todo:"早餐",
+    with_mask:true,
+    comment:"鸡蛋",
+    close_contacts:[
+      {
+        name:"打饭阿姨",
+        relation:"",
+        with_mask:false,
+        gender:"女",
+        telphone:"11101011010",
+        organization:"餐饮服务部",
+      }
+    ]
+  }
 ]
 
 ReactDOM.render(
