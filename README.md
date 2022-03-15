@@ -8,3 +8,7 @@
 - [ ] 查看记录
 - [ ] 编辑记录
 - [ ] 记录导出
+
+## Setup
+`python3 server.py`
+`localhost:9090`

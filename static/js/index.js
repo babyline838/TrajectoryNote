@@ -2,9 +2,11 @@
 - Record := Time, Location, Traffic, ToDo, WearMask, Comment, [] Contactors
 - Contactor := Name, Relationship,  WearMask, Gender, Tel, Organization
 **/
+//
 const {
   createMuiTheme,
   makeStyles,
+  responsiveFontSizes,
   Container,
   CssBaseline,
   ListSubheader,
@@ -32,11 +34,11 @@ const {
   Dialog,DialogTitle,MuiDialogTitle,TextField
 } = MaterialUI;
 
-const theme = createMuiTheme({
+const theme = responsiveFontSizes(createMuiTheme({
   palette:{
     primary: MaterialUI.colors.blue,
   }
-});
+}));
 
 const useStyles = makeStyles((theme) => ({
   heroContent: {
@@ -237,7 +239,7 @@ function EditDialog(props) {
   );
 }
 
-function ServerItem(props) {
+function RecordItem(props) {
   const info=props.info;
   const handleClickEdit=props.editcallback;
   const classes=useStyles();
@@ -320,26 +322,26 @@ function Album(props) {
       <AppBar position="relative">
         <Toolbar>
           <Typography variant="h6" color="inherit" noWrap>
-            Album layout
+            行程记录本
           </Typography>
         </Toolbar>
       </AppBar>
       <main>
         <Container className={classes.cardGrid} maxWidth="md">
           <Grid container spacing={4}>
-            {data.map((info) => (<ServerItem info={info} editcallback={()=>handleClickEdit(info)} />))}
             <Grid item key={-1} xs={12} sm={6} md={4}>
               <Card className={classes.card}>
-                <CardContent className={classes.cardContent} style={{minHeight:250,textAlign:'center'}}>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    Add New
+                <CardContent className={classes.cardContent} style={{minHeight:100,textAlign:'center'}}>
+                  <Typography gutterBottom variant="h4" component="h2">
+                    新建记录
                   </Typography>
                   <IconButton color="primary" onClick={handleClickAdd}>
-                    <Icon style={{fontSize:'4em'}}>add_circle_outline</Icon>
+                    <Icon style={{fontSize:'3em'}}>add_circle_outline</Icon>
                   </IconButton>
                 </CardContent>
               </Card>
             </Grid>
+            {data.reverse().map((info) => (<RecordItem info={info} editcallback={()=>handleClickEdit(info)} />))}
           </Grid>
         </Container>
       </main>
