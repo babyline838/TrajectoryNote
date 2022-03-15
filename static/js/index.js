@@ -102,7 +102,60 @@ function Free(){
   return (<Icon className={classes.iconcold}>ac_unit</Icon>)
 }
 
+function NewEmptyContactRow(){
+  const classes = useStyles();
+  return <span/>
+}
+function ContactRow(props){
+  const classes = useStyles();
 
+  return (
+    <Grid container spacing={3}>
+    <Grid item xs={6} sm={4} md={3}>
+      <TextField
+        id="name"
+        label="姓名/身份"
+        defaultValue={props.info.current.name}
+        margin="dense"
+    /></Grid>
+    <Grid item xs={6} sm={4} md={3}>
+      <TextField
+        id="relation"
+        label="关系"
+        defaultValue={props.info.current.relation}
+        margin="dense"
+    /></Grid>
+    <Grid item xs={6} sm={4} md={3}>
+      <TextField
+        id="with_mask"
+        label="是否戴口罩"
+        defaultValue={props.info.current.with_mask?"是":"否"}
+        margin="dense"
+    /></Grid>
+    <Grid item xs={6} sm={4} md={3}>
+      <TextField
+        id="gender"
+        label="性别"
+        defaultValue={props.info.current.gender}
+        margin="dense"
+    /></Grid>
+    <Grid item xs={6} sm={4} md={3}>
+      <TextField
+        id="telphone"
+        label="电话号码"
+        defaultValue={props.info.current.telphone}
+        margin="dense"
+    /></Grid>
+    <Grid item xs={6} sm={4} md={3}>
+      <TextField
+        id="organization"
+        label="学院/单位"
+        defaultValue={props.info.current.organization}
+        margin="dense"
+    /></Grid>
+    </Grid>
+  );
+}
 
 function AddDialog(props) {
   const classes = useStyles();
@@ -110,12 +163,27 @@ function AddDialog(props) {
   const handleClose = () => {
     onClose();
   };
-  const IP=React.useRef(null);
-  const MAC=React.useRef(null);
-  const sshport=React.useRef(null);
-  const [gpunum,setgpunum]=React.useState(2);
-  const nickname=React.useRef(null);
-  const gpuversions=React.useRef(null);
+  const time=React.useRef("时间");
+  const location=React.useRef("地点");
+  const traffic=React.useRef("交通工具");
+  const todo=React.useRef("做什么事");
+  const with_mask=React.useRef(false);
+  const comment=React.useRef("备注");
+  const contacts=[React.useRef({
+    name:"打饭阿姨",
+    relation:"",
+    with_mask:false,
+    gender:"女",
+    telphone:"11101011010",
+    organization:"餐饮服务部",
+  }),React.useRef({
+    name:"打饭大叔",
+    relation:"",
+    with_mask:true,
+    gender:"男",
+    telphone:"11101011010",
+    organization:"餐饮服务部",
+  }),];
   const handleSubmit = ()=>{
     // debugger
     let promise=fetch('/setstate',{
@@ -144,7 +212,7 @@ function AddDialog(props) {
   return (
     <Dialog maxWidth='xs' onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
       <DialogTitle id="simple-dialog-title">
-        Add New Server
+        添加记录
         {onClose ? (
         <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
           <Icon>close</Icon>
@@ -152,13 +220,26 @@ function AddDialog(props) {
         ) : null}
       </DialogTitle>
       <form className={classes.form} noValidate autoComplete="off" style={{textAlign:'center'}}>
-        <TextField fullWidth required className={classes.textfield} ref={IP} name="IP" id="IP" label="IP" defaultValue="192.168.x.x"/>
-        <TextField fullWidth required className={classes.textfield} ref={MAC} name="MAC" id="MAC" label="MAC" defaultValue="xx:xx:xx:xx:xx:xx"/>
-        <TextField fullWidth required className={classes.textfield} ref={sshport} name="sshport" id="sshport" label="SSH Port" defaultValue="22"/>
-        <TextField fullWidth required className={classes.textfield} name="gpunum" id="gpunum" label="GPU num" value={gpunum} onChange={handlegpunum}/>
-        <TextField fullWidth          className={classes.textfield} ref={nickname} name="nickname" id="nickname" label="Nickname" defaultValue="Server"/>
-        <TextField fullWidth required className={classes.textfield} ref={gpuversions} name="gpuversions" id="gpuversions" label="GPU Versions" helperText="Split use ; eg. GTX1080;Titan X;V100"/>
-        <Button size="large" variant="contained" color="primary" onClick={handleSubmit}>Add</Button>
+        <TextField fullWidth required className={classes.textfield} ref={time} name="time" id="time" label="时间" defaultValue=""/>
+        <TextField fullWidth required className={classes.textfield} ref={location} name="location" id="location" label="地点" defaultValue=""/>
+        <TextField fullWidth required className={classes.textfield} ref={traffic} name="traffic" id="traffic" label="交通方式" defaultValue="无"/>
+        <TextField fullWidth required className={classes.textfield} ref={todo} name="todo" id="todo" label="做什么事" defaultValue=""/>
+        <TextField fullWidth required className={classes.textfield} ref={with_mask} name="with_mask" id="with_mask" label="是否戴口罩"/>
+
+        <List>
+          <Grid container spacing={4}>
+            {
+              contacts.map((contact,idx) => (
+              <Grid item xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
+              <Paper elevation={4} key={idx}>
+                <ContactRow info={contact}/>
+              </Paper></Grid>))
+            }
+            <NewEmptyContactRow key={-1}/>
+          </Grid>
+        </List>
+
+        <Button size="large" variant="contained" color="primary" onClick={handleSubmit} style={{marginTop:'15px'}}>确认</Button>
       </form>
     </Dialog>
   );
@@ -291,7 +372,7 @@ function RecordItem(props) {
               info.close_contacts.map((contact,idx)=>(
                 <React.Fragment key={idx}>
                 <ListItem>
-                  <ListItemText primary={contact.name}/>
+                  <ListItemText primary={contact.name + " | " + (contact.with_mask?"":"未") +" 戴口罩"} style={{color: contact.with_mask?'black':'red'}}/>
                 </ListItem>
                 <Divider />
                 </React.Fragment>
@@ -408,6 +489,14 @@ let data=[
         relation:"",
         with_mask:false,
         gender:"女",
+        telphone:"11101011010",
+        organization:"餐饮服务部",
+      },
+      {
+        name:"打饭大叔",
+        relation:"",
+        with_mask:true,
+        gender:"男",
         telphone:"11101011010",
         organization:"餐饮服务部",
       }
