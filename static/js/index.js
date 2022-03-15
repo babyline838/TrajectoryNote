@@ -129,8 +129,8 @@ function ContactRow(props){
     props.updatedata(newinfo);
   };
   return (
-    <Grid container spacing={2}>
-    <Grid item xs={5} sm={5} md={5}>
+    <Grid container spacing={2} style={{marginLeft:theme.spacing(1)}}>
+    <Grid item xs={6} sm={6} md={6}>
       <TextField
         id="name"
         label="姓名/身份"
@@ -138,19 +138,15 @@ function ContactRow(props){
         margin="dense"
         onChange={handleChange}
     /></Grid>
-    <Grid item xs={5} sm={5} md={5}>
-      <FormControlLabel
-        control={
-          <Checkbox  checked={props.info.with_mask} color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
-        }
-        label="已戴口罩"
-    /></Grid>
+    <Grid item xs={3} sm={3} md={3} />
     <Grid item xs={2} sm={2} md={2} style={{marginLeft:"-1.2em"}}>
       <IconButton  disableRipple color="primary" onClick={()=>{props.handleDeleteContact();}}>
         <Icon style={{fontSize:'1.2em'}}>delete</Icon>
       </IconButton>
     </Grid>
 
+
+    {/**
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="relation"
@@ -175,13 +171,21 @@ function ContactRow(props){
         margin="dense"
         onChange={handleChange}
     /></Grid>
-    <Grid item xs={6} sm={4} md={3}>
+    **/}
+    <Grid item xs={6} sm={6} md={6}>
       <TextField
         id="organization"
         label="学院/单位"
         value={props.info.organization}
         margin="dense"
         onChange={handleChange}
+    /></Grid>
+    <Grid item xs={6} sm={6} md={6} style={{alignSelf:'flex-end'}}>
+      <FormControlLabel
+        control={
+          <Checkbox  checked={props.info.with_mask} disableRipple color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
+        }
+        label="已戴口罩"
     /></Grid>
     </Grid>
   );
