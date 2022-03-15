@@ -87,6 +87,9 @@ const useStyles = makeStyles((theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
+  title: {
+    flexGrow: 1,
+  },
 }));
 
 
@@ -115,21 +118,28 @@ function Free(){
 
 function ContactRow(props){
   const classes = useStyles();
+  const handleChange = (event) => {
+    let newinfo=props.info;
+    newinfo[event.target.id]=event.target.value;
+    props.updatedata(newinfo);
+  };
   return (
     <Grid container spacing={2}>
     <Grid item xs={5} sm={5} md={5}>
       <TextField
         id="name"
         label="姓名/身份"
-        defaultValue={props.info.name}
+        value={props.info.name}
         margin="dense"
+        onChange={handleChange}
     /></Grid>
     <Grid item xs={5} sm={5} md={5}>
       <TextField
         id="with_mask"
         label="是否戴口罩"
-        defaultValue={props.info.with_mask?"是":"否"}
+        value={props.info.with_mask?"是":"否"}
         margin="dense"
+        onChange={handleChange}
     /></Grid>
     <Grid item xs={2} sm={2} md={2} style={{marginLeft:"-1.2em"}}>
       <IconButton  disableRipple color="primary" onClick={()=>{props.handleDeleteContact();props.update();}}>
@@ -141,29 +151,33 @@ function ContactRow(props){
       <TextField
         id="relation"
         label="关系"
-        defaultValue={props.info.relation}
+        value={props.info.relation}
         margin="dense"
+        onChange={handleChange}
     /></Grid>
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="gender"
         label="性别"
-        defaultValue={props.info.gender}
+        value={props.info.gender}
         margin="dense"
+        onChange={handleChange}
     /></Grid>
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="telphone"
         label="电话号码"
-        defaultValue={props.info.telphone}
+        value={props.info.telphone}
         margin="dense"
+        onChange={handleChange}
     /></Grid>
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="organization"
         label="学院/单位"
-        defaultValue={props.info.organization}
+        value={props.info.organization}
         margin="dense"
+        onChange={handleChange}
     /></Grid>
     </Grid>
   );
@@ -175,14 +189,16 @@ function AddDialog(props) {
   const handleClose = () => {
     onClose();
   };
-  const time=React.useRef("时间");
-  const location=React.useRef("地点");
-  const traffic=React.useRef("交通工具");
-  const todo=React.useRef("做什么事");
-  const with_mask=React.useRef(false);
-  const comment=React.useRef("备注");
-  const [need_update,setupdate]=React.useState(false);
-  const contacts=React.useRef([{
+  const [info,setinfo]=React.useState({
+    id:next_record_id,
+    time:Date.now(),
+    location:"",
+    traffic:"无",
+    todo:"",
+    with_mask:false,
+    comment:"",
+  })
+  let [contacts,setcontacts]=React.useState([{
     name:"",
     relation:"",
     with_mask:false,
@@ -190,23 +206,108 @@ function AddDialog(props) {
     telphone:"",
     organization:"",
   }]);
+
   const handleSubmit = ()=>{
-    let data={
-      time:time.current.getElementsByTagName('input')[0].value,
-      location:location.current.getElementsByTagName('input')[0].value,
-      traffic:traffic.current.getElementsByTagName('input')[0].value,
-      todo:todo.current.getElementsByTagName('input')[0].value,
-      with_mask:with_mask.current.getElementsByTagName('input')[0].value,
-      comment:comment.current.getElementsByTagName('input')[0].value,
-      close_contacts:contacts.current,
-    };
+    let data=info;
+    data.close_contacts=contacts;
     let valid=true;
     // Validation
     // console.log(data);
     // window.var_data=data;
     if(valid){
-      data.id=next_record_id;
-      next_record_id+=1;
+      data.id=info.id;
+      props.updatecallback(data);
+      onClose();
+    } else {
+      // set err
+    }
+  };
+  const handleAddContact = ()=>{
+    setcontacts([...contacts,{
+      name:"",
+      relation:"",
+      with_mask:false,
+      gender:"",
+      telphone:"",
+      organization:"",
+    }]);
+  };
+
+  const handleDeleteContactFactory = (idx)=>{
+    return ()=>{
+      setcontacts(contacts.filter((e,i)=>i!=idx));
+    };
+  };
+  const updatecontacts = (idx)=>{
+    return (item)=>{
+      setcontacts(contacts.map((e,i)=>i==idx?item:e));
+    }
+  }
+  const handleChange = (event) =>{
+    let newinfo=info;
+    newinfo[event.target.id]=event.target.value;
+    setinfo({...newinfo});
+  };
+
+  return (
+    <Dialog maxWidth='xs' onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
+      <DialogTitle id="simple-dialog-title">
+        添加记录
+        {onClose ? (
+        <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
+          <Icon>close</Icon>
+        </IconButton>
+        ) : null}
+      </DialogTitle>
+      <form className={classes.form} noValidate autoComplete="off" style={{textAlign:'center'}}>
+        <TextField fullWidth required className={classes.textfield} value={info.time} onChange={handleChange} name="time" id="time" label="时间"/>
+        {
+          // <TimePicker></TimePicker>
+        }
+        <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" label="地点" />
+        <TextField fullWidth required className={classes.textfield} value={info.traffic} onChange={handleChange} name="traffic" id="traffic" label="交通方式" />
+        <TextField fullWidth required className={classes.textfield} value={info.todo} onChange={handleChange} name="todo" id="todo" label="做什么事" />
+        <TextField fullWidth required className={classes.textfield} value={info.with_mask?"是":"否"} onChange={handleChange} name="with_mask" id="with_mask" label="是否戴口罩" />
+        <TextField fullWidth required className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
+
+        <List>
+          <Grid container spacing={4}>
+            {
+              contacts?.map((contact,idx) => (
+              <Grid item key={idx} xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
+              <Paper elevation={4}>
+                <ContactRow info={contact} setinfo={updatecontacts(idx)} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} updatedata={updatecontacts(idx)}/>
+              </Paper></Grid>))
+            }
+          </Grid>
+        </List>
+        <Button size="large" variant="contained" color="primary" disableRipple onClick={handleAddContact} style={{marginTop:'15px',marginRight:'40px'}}>添加接触者</Button>
+        <Button size="large" variant="contained" color="primary" onClick={handleSubmit} style={{marginTop:'15px'}}>确认</Button>
+      </form>
+    </Dialog>
+  );
+}
+
+function EditDialog(props) {
+  const classes = useStyles();
+  const { onClose, open } = props;
+  const handleClose = () => {
+    onClose();
+  };
+  const info=props.defaultinfo;
+  const updatedata=props.updatedata;
+
+  let contacts=info.close_contacts;
+
+  const [need_update,setupdate]=React.useState(false);
+  const handleSubmit = ()=>{
+    let data=info;
+    let valid=true;
+    // Validation
+    // console.log(data);
+    // window.var_data=data;
+    if(valid){
+      data.id=info.id;
       props.updatecallback(data);
       onClose();
     } else {
@@ -224,108 +325,31 @@ function AddDialog(props) {
     });
     setupdate(!need_update);
   };
+  const setcontacts = (list)=>{
+    updatedata(list);
+  };
 
   const handleDeleteContactFactory = (idx)=>{
     return ()=>{
-      contacts.current.splice(idx,1);
+      // contacts.splice(idx,1);
+      setcontacts(contacts.filter((e,i)=>i!=idx));
     };
   };
-
-  return (
-    <Dialog maxWidth='xs' onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
-      <DialogTitle id="simple-dialog-title">
-        添加记录
-        {onClose ? (
-        <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
-          <Icon>close</Icon>
-        </IconButton>
-        ) : null}
-      </DialogTitle>
-      <form className={classes.form} autoComplete="off" style={{textAlign:'center'}}>
-        <TextField fullWidth required className={classes.textfield} ref={time} name="time" id="time" label="时间" defaultValue=""/>
-        {
-          // <TimePicker></TimePicker>
-        }
-        <TextField fullWidth required className={classes.textfield} ref={location} name="location" id="location" label="地点" defaultValue=""/>
-        <TextField fullWidth required className={classes.textfield} ref={traffic} name="traffic" id="traffic" label="交通方式" defaultValue="无"/>
-        <TextField fullWidth required className={classes.textfield} ref={todo} name="todo" id="todo" label="做什么事" defaultValue=""/>
-        <TextField fullWidth required className={classes.textfield} ref={with_mask} name="with_mask" id="with_mask" label="是否戴口罩"/>
-        <TextField fullWidth required className={classes.textfield} ref={comment} name="comment" id="comment" label="备注"/>
-
-        <List>
-          <Grid container spacing={4}>
-            {
-              contacts.current.map((contact,idx) => (
-              <Grid item key={idx} xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
-              <Paper elevation={4}>
-                <ContactRow info={contact} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} update={()=>setupdate(!need_update)}/>
-              </Paper></Grid>))
-            }
-          </Grid>
-        </List>
-
-        <Button size="large" variant="contained" color="primary" disableRipple onClick={handleAddContact} style={{marginTop:'15px',marginRight:'40px'}}>添加接触者</Button>
-        <Button size="large" variant="contained" color="primary" onClick={handleSubmit} style={{marginTop:'15px'}}>确认</Button>
-      </form>
-    </Dialog>
-  );
-}
-
-function EditDialog(props) {
-  const classes = useStyles();
-  const { onClose, open } = props;
-  const handleClose = () => {
-    onClose();
+  const updatecontacts = (idx)=>{
+    return (item)=>{
+      setcontacts(contacts.map((e,i)=>i==idx?item:e));
+    }
+  }
+  const handleChange = (event) =>{
+    let newinfo=info;
+    newinfo[event.target.id]=event.target.value;
+    updatedata(newinfo);
   };
-  const info=props.defaultinfo;
-  const time=React.useRef("时间");
-  const location=React.useRef("地点");
-  const traffic=React.useRef("交通工具");
-  const todo=React.useRef("做什么事");
-  const with_mask=React.useRef(false);
-  const comment=React.useRef("备注");
-  const contacts=React.useRef(info.close_contacts??[]);
-  const [need_update,setupdate]=React.useState(false);
+  const handleContactChangeFactory = (idx)=>{
+    return (item)=>{
 
-  const handleSubmit = ()=>{
-    // debugger
-    let promise=fetch('/editstate',{
-      method:"POST",
-      body:JSON.stringify({
-        'id':info.id,
-        "IP":IP.current.getElementsByTagName('input')[0].value,
-        "MAC":MAC.current.getElementsByTagName('input')[0].value,
-        "sshport":Number(sshport.current.getElementsByTagName('input')[0].value),
-        "gpunum":Number(gpunum.current.getElementsByTagName('input')[0].value),
-        "nickname":nickname.current.getElementsByTagName('input')[0].value,
-        "gpuversions":gpuversions.current.getElementsByTagName('input')[0].value,
-      }),
-      headers:{
-        "Content-Type":"application/json"
-      }
-    })
-    onClose();
-    promise.then((resp)=>{
-      location.reload(true)
-    });
-  };
-  const handleAddContact = ()=>{
-    contacts.current.push({
-      name:"",
-      relation:"",
-      with_mask:false,
-      gender:"",
-      telphone:"",
-      organization:"",
-    });
-    setupdate(!need_update);
-  };
-  const handleDeleteContactFactory = (idx)=>{
-    return ()=>{
-      contacts.current.splice(idx,1);
-    };
-  };
-
+    }
+  }
   return (
     <Dialog maxWidth='xs' onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
       <DialogTitle id="simple-dialog-title">
@@ -337,23 +361,23 @@ function EditDialog(props) {
         ) : null}
       </DialogTitle>
       <form className={classes.form} noValidate autoComplete="off" style={{textAlign:'center'}}>
-        <TextField fullWidth required className={classes.textfield} ref={time} name="time" id="time" label="时间" defaultValue={info.time}/>
+        <TextField fullWidth required className={classes.textfield} value={info.time} onChange={handleChange} name="time" id="time" label="时间"/>
         {
           // <TimePicker></TimePicker>
         }
-        <TextField fullWidth required className={classes.textfield} ref={location} name="location" id="location" label="地点" defaultValue={info.location}/>
-        <TextField fullWidth required className={classes.textfield} ref={traffic} name="traffic" id="traffic" label="交通方式" defaultValue={info.traffic}/>
-        <TextField fullWidth required className={classes.textfield} ref={todo} name="todo" id="todo" label="做什么事" defaultValue={info.todo}/>
-        <TextField fullWidth required className={classes.textfield} ref={with_mask} name="with_mask" id="with_mask" label="是否戴口罩" defaultValue={info.with_mask}/>
-        <TextField fullWidth required className={classes.textfield} ref={comment} name="comment" id="comment" label="备注" defaultValue={info.comment}/>
+        <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" label="地点" />
+        <TextField fullWidth required className={classes.textfield} value={info.traffic} onChange={handleChange} name="traffic" id="traffic" label="交通方式" />
+        <TextField fullWidth required className={classes.textfield} value={info.todo} onChange={handleChange} name="todo" id="todo" label="做什么事" />
+        <TextField fullWidth required className={classes.textfield} value={info.with_mask?"是":"否"} onChange={handleChange} name="with_mask" id="with_mask" label="是否戴口罩" />
+        <TextField fullWidth required className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
 
         <List>
           <Grid container spacing={4}>
             {
-              contacts.current.map((contact,idx) => (
+              contacts?.map((contact,idx) => (
               <Grid item key={idx} xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
               <Paper elevation={4}>
-                <ContactRow info={contact} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} update={()=>setupdate(!need_update)}/>
+                <ContactRow info={contact} setinfo={updatecontacts(idx)} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} updatedata={updatecontacts(idx)}/>
               </Paper></Grid>))
             }
           </Grid>
@@ -381,7 +405,6 @@ function RecordItem(props) {
   const info=props.info;
   const handleClickEdit=props.editcallback;
   const classes=useStyles();
-  console.log(info);
   return (
   <Grid item xs={12} sm={6} md={4}>
     <Card className={classes.card}>
@@ -452,7 +475,32 @@ function Album(props) {
   };
 
   const append_data = (item) => {
+    console.log(item)
     setrecorddata([...recorddata,item]);
+  };
+
+  const modify_data = (item) => {
+    let data=[];
+    for(let i=0;i<recorddata.length;++i){
+      if(item.id==recorddata[i].id){
+        data.push(item);
+      } else {
+        data.push(recorddata[i]);
+      }
+    }
+    setrecorddata_impl(data);
+  };
+
+  const modify_data_save = (item) => {
+    let data=[];
+    for(let i=0;i<recorddata.length;++i){
+      if(item.id==recorddata[i].id){
+        data.push(item);
+      } else {
+        data.push(recorddata[i]);
+      }
+    }
+    setrecorddata(data);
   };
 
   const handleClickEdit = (info) => {
@@ -471,11 +519,12 @@ function Album(props) {
   return (
     <React.Fragment>
       <CssBaseline />
-      <AppBar position="relative">
+      <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" color="inherit" noWrap>
+          <Typography variant="h6" color="inherit" noWrap className={classes.title}>
             行程记录本
           </Typography>
+          <Button color="inherit"><Icon>get_app</Icon>导出</Button>
         </Toolbar>
       </AppBar>
       <main>
@@ -498,7 +547,7 @@ function Album(props) {
         </Container>
       </main>
       <AddDialog open={openAdd} onClose={handleCloseAdd} updatecallback={append_data}/>
-      <EditDialog open={openEdit} onClose={handleCloseEdit} defaultinfo={editinfo} />
+      <EditDialog open={openEdit} onClose={handleCloseEdit} updatecallback={modify_data_save} updatedata={modify_data} defaultinfo={editinfo} />
     </React.Fragment>
   );
 }
