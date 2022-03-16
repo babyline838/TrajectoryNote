@@ -679,6 +679,7 @@ function Album(props) {
           <Typography variant="h6" color="inherit" noWrap className={classes.title}>
             行程记录本
           </Typography>
+          <Button color="inherit" onClick={()=>openGuide?null:setOpenGuide(true)}><Icon>help_outline</Icon></Button>
           <Button color="inherit" onClick={export_records}><Icon>get_app</Icon>导出</Button>
         </Toolbar>
       </AppBar>
