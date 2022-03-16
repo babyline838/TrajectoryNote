@@ -245,6 +245,16 @@ function AddDialog(props) {
     if(valid){
       data.id=info.id;
       props.updatecallback(data);
+      setinfo({
+        id:next_record_id,
+        time_start:dateFormat('YYYY-mm-ddTHH:MM',new Date()),
+        time_end:dateFormat('YYYY-mm-ddTHH:MM',new Date()),
+        location:"",
+        traffic:"无",
+        todo:"",
+        with_mask:false,
+        comment:"",
+      });
       onClose();
     } else {
       // set err
@@ -540,6 +550,7 @@ function Album(props) {
 
   const append_data = (item) => {
     setrecorddata([...recorddata,item]);
+    next_record_id+=1;
   };
 
   const set_data = (list) => {
@@ -759,7 +770,8 @@ let data=JSON.parse(localStorage['contact_info']??"[]");
 //   }
 // ]
 
-let next_record_id=Math.max(...(data.map(e=>e.id)))??0+1;
+let next_record_id=data.length==0?0:(Math.max(...(data.map(e=>e.id)))+1);
+
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
