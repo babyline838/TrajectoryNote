@@ -104,6 +104,25 @@ function Free(){
   return (<Icon className={classes.iconcold}>ac_unit</Icon>)
 }
 
+function dateFormat(fmt, date) {
+    let ret;
+    const opt = {
+        "Y+": date.getFullYear().toString(),        // 年
+        "m+": (date.getMonth() + 1).toString(),     // 月
+        "d+": date.getDate().toString(),            // 日
+        "H+": date.getHours().toString(),           // 时
+        "M+": date.getMinutes().toString(),         // 分
+        "S+": date.getSeconds().toString()          // 秒
+    };
+    for (let k in opt) {
+        ret = new RegExp("(" + k + ")").exec(fmt);
+        if (ret) {
+            fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+        };
+    };
+    return fmt;
+}
+
 // function TimePicker(props){
 //   const [startDate, setStartDate] = React.useState(new Date());
 //   return (
@@ -130,15 +149,21 @@ function ContactRow(props){
   };
   return (
     <Grid container spacing={2} style={{marginLeft:theme.spacing(1)}}>
-    <Grid item xs={6} sm={6} md={6}>
+    <Grid item xs={4} sm={4} md={4}>
       <TextField
         id="name"
-        label="姓名/身份"
+        label="姓名"
         value={props.info.name}
         margin="dense"
         onChange={handleChange}
     /></Grid>
-    <Grid item xs={3} sm={3} md={3} />
+    <Grid item xs={5} sm={5} md={5} style={{alignSelf:'flex-end'}}>
+      <FormControlLabel
+        control={
+          <Checkbox  checked={props.info.with_mask} disableRipple color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
+        }
+        label="对方已戴口罩"
+    /></Grid>
     <Grid item xs={2} sm={2} md={2} style={{marginLeft:"-1.2em"}}>
       <IconButton  disableRipple color="primary" onClick={()=>{props.handleDeleteContact();}}>
         <Icon style={{fontSize:'1.2em'}}>delete</Icon>
@@ -172,20 +197,14 @@ function ContactRow(props){
         onChange={handleChange}
     /></Grid>
     **/}
-    <Grid item xs={6} sm={6} md={6}>
+    <Grid item xs={10} sm={10} md={10}>
       <TextField
+        fullWidth
         id="organization"
         label="学院/单位"
         value={props.info.organization}
         margin="dense"
         onChange={handleChange}
-    /></Grid>
-    <Grid item xs={6} sm={6} md={6} style={{alignSelf:'flex-end'}}>
-      <FormControlLabel
-        control={
-          <Checkbox  checked={props.info.with_mask} disableRipple color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
-        }
-        label="已戴口罩"
     /></Grid>
     </Grid>
   );
@@ -199,7 +218,8 @@ function AddDialog(props) {
   };
   const [info,setinfo]=React.useState({
     id:next_record_id,
-    time:Date.now(),
+    time_start:dateFormat('YYYY-mm-ddTHH:MM',new Date()),
+    time_end:dateFormat('YYYY-mm-ddTHH:MM',new Date()),
     location:"",
     traffic:"无",
     todo:"",
@@ -253,10 +273,13 @@ function AddDialog(props) {
   }
   const handleChange = (event) =>{
     let newinfo=info;
-    if(event.target.id!="with_mask"){
-      newinfo[event.target.id]=event.target.value;
-    } else {
+    if(event.target.id=="with_mask"){
       newinfo[event.target.id]=event.target.checked;
+    } else if(event.target.id=="time_start"){
+      newinfo[event.target.id]=event.target.value;
+      newinfo.time_end=event.target.value;
+    } else {
+      newinfo[event.target.id]=event.target.value;
     }
     setinfo({...newinfo});
   };
@@ -271,10 +294,8 @@ function AddDialog(props) {
         ) : null}
       </DialogTitle>
       <form className={classes.form} noValidate autoComplete="off" style={{textAlign:'center'}}>
-        <TextField fullWidth required className={classes.textfield} value={info.time} onChange={handleChange} name="time" id="time" label="时间"/>
-        {
-          // <TimePicker></TimePicker>
-        }
+        <TextField fullWidth required type="datetime-local" className={classes.textfield} value={info.time_start} onChange={handleChange} name="time_start" id="time_start" label="开始时间"/>
+        <TextField fullWidth required type="datetime-local" className={classes.textfield} value={info.time_end} onChange={handleChange} name="time_end" id="time_end" label="结束时间"/>
         <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" label="地点" />
         <TextField fullWidth required className={classes.textfield} value={info.traffic} onChange={handleChange} name="traffic" id="traffic" label="交通方式" />
         <TextField fullWidth required className={classes.textfield} value={info.todo} onChange={handleChange} name="todo" id="todo" label="做什么事" />
@@ -284,7 +305,7 @@ function AddDialog(props) {
           }
           label="已戴口罩"
         />
-        <TextField fullWidth required className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
+        <TextField fullWidth className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
 
         <List>
           <Grid container spacing={4}>
@@ -310,10 +331,10 @@ function EditDialog(props) {
   const handleClose = () => {
     onClose();
   };
-  const info=props.defaultinfo;
+  let info=props.defaultinfo;
   const updatedata=props.updatedata;
 
-  let contacts=info.close_contacts;
+  let contacts=props.defaultinfo.close_contacts;
 
   const [need_update,setupdate]=React.useState(false);
   const handleSubmit = ()=>{
@@ -331,17 +352,18 @@ function EditDialog(props) {
     }
   };
   const handleAddContact = ()=>{
-    contacts.current.push({
+    let newcontacts=[...contacts,{
       name:"",
       relation:"",
       with_mask:false,
       gender:"",
       telphone:"",
       organization:"",
-    });
-    setupdate(!need_update);
+    }];
+    setcontacts(newcontacts);
   };
   const setcontacts = (list)=>{
+    console.log(list)
     updatedata({...info,close_contacts:list});
   };
 
@@ -360,10 +382,13 @@ function EditDialog(props) {
   }
   const handleChange = (event) =>{
     let newinfo=info;
-    if(event.target.id!="with_mask"){
-      newinfo[event.target.id]=event.target.value;
-    } else {
+    if(event.target.id=="with_mask"){
       newinfo[event.target.id]=event.target.checked;
+    } else if(event.target.id=="time_start"){
+      newinfo[event.target.id]=event.target.value;
+      newinfo.time_end=event.target.value;
+    } else {
+      newinfo[event.target.id]=event.target.value;
     }
     updatedata(newinfo);
   };
@@ -378,10 +403,8 @@ function EditDialog(props) {
         ) : null}
       </DialogTitle>
       <form className={classes.form} noValidate autoComplete="off" style={{textAlign:'center'}}>
-        <TextField fullWidth required className={classes.textfield} value={info.time} onChange={handleChange} name="time" id="time" label="时间"/>
-        {
-          // <TimePicker></TimePicker>
-        }
+        <TextField fullWidth required type="datetime-local" className={classes.textfield} value={info.time_start} onChange={handleChange} name="time_start" id="time_start" label="开始时间"/>
+        <TextField fullWidth required type="datetime-local" className={classes.textfield} value={info.time_end} onChange={handleChange} name="time_end" id="time_end" label="结束时间"/>
         <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" label="地点" />
         <TextField fullWidth required className={classes.textfield} value={info.traffic} onChange={handleChange} name="traffic" id="traffic" label="交通方式" />
         <TextField fullWidth required className={classes.textfield} value={info.todo} onChange={handleChange} name="todo" id="todo" label="做什么事" />
@@ -394,7 +417,7 @@ function EditDialog(props) {
           }
           label="已戴口罩"
         />
-        <TextField fullWidth required className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
+        <TextField fullWidth className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
 
         <List>
           <Grid container spacing={4}>
@@ -443,9 +466,21 @@ function RecordItem(props) {
           </IconButton>
         </div>
         <div>
-          <Typography variant="body1">
-            时间: {show_time(info.time)}
-          </Typography>
+          {
+            (info.time_start==info.time_end)?
+              (<Typography variant="body1">
+                时间: {show_time(info.time_start)}
+              </Typography>)
+            :(<React.Fragment>
+              <Typography variant="body1">
+                开始时间: {show_time(info.time_start)}
+              </Typography>
+              <Typography variant="body1">
+                结束时间: {show_time(info.time_end)}
+              </Typography>
+              </React.Fragment>)
+          }
+
           <Typography variant="body1">
             地点: {info.location}
           </Typography>
@@ -481,10 +516,15 @@ function RecordItem(props) {
 }
 
 function Album(props) {
+  // const [init,setinit] = React.useState(false);
   const [openAdd, setOpenAdd] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
   const [editinfo, setEditinfo] = React.useState({});
   const [recorddata, setrecorddata_impl] = React.useState(props.data);
+  // if(!init){
+  //   setrecorddata_impl(props.data);
+  //   setinit(true);
+  // }
 
   const setrecorddata = (item)=>{
     localStorage['contact_info']=JSON.stringify(item);
@@ -508,8 +548,8 @@ function Album(props) {
   };
 
   const modify_data = (item) => {
+    setEditinfo(item);
     let data=[];
-    debugger
     for(let i=0;i<recorddata.length;++i){
       if(item.id==recorddata[i].id){
         data.push(item);
@@ -517,7 +557,7 @@ function Album(props) {
         data.push(recorddata[i]);
       }
     }
-    setrecorddata_impl(data);
+    setrecorddata_impl([...data]);
   };
 
   const modify_data_save = (item) => {
@@ -542,7 +582,9 @@ function Album(props) {
   };
 
   const classes = useStyles();
-  const data=recorddata;
+
+  console.log(recorddata)
+
   return (
     <React.Fragment>
       <CssBaseline />
@@ -569,7 +611,7 @@ function Album(props) {
                 </CardContent>
               </Card>
             </Grid>
-            {data.slice().reverse().map((info) => (<RecordItem info={info} key={info.id} editcallback={()=>handleClickEdit({...info})} />))}
+            {recorddata.slice().reverse().map((info) => (<RecordItem info={info} key={info.id} editcallback={()=>handleClickEdit({...info})} />))}
           </Grid>
         </Container>
       </main>
@@ -594,7 +636,8 @@ let data=JSON.parse(localStorage['contact_info']??"[]");
 // let data=[
 //   {
 //     id:5,
-//     time:1647311997610,
+//     time_start:1647311997610,
+//     time_end:
 //     location:"第四餐饮大楼2楼",
 //     traffic:"无",
 //     todo:"早餐",
@@ -621,7 +664,7 @@ let data=JSON.parse(localStorage['contact_info']??"[]");
 //   }
 // ]
 
-let next_record_id=Math.max(...(data.map(e=>e.id)))+1;
+let next_record_id=Math.max(...(data.map(e=>e.id)))??0+1;
 
 ReactDOM.render(
   <ThemeProvider theme={theme}>
