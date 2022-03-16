@@ -656,6 +656,11 @@ function export_records(){
       if (item.close_contacts.length > max_close_contacts_length) max_close_contacts_length = item.close_contacts.length;
       item.time_start=item.time_start.replace('T',' ');
       item.time_end=item.time_end.replace('T',' ');
+      item.close_contacts.forEach(contact=>{
+        delete contact.gender;
+        delete contact.telphone;
+        delete contact.relation;
+      })
   })
 
   const headers = [
@@ -671,10 +676,10 @@ function export_records(){
 
   for (let i = 0; i < max_close_contacts_length; i++) {
       headers.push("密接"+i+"姓名")
-      headers.push("密接"+i+"关系")
+      // headers.push("密接"+i+"关系")
       headers.push("密接"+i+"是否带口罩")
-      headers.push("密接"+i+"性别")
-      headers.push("密接"+i+"电话")
+      // headers.push("密接"+i+"性别")
+      // headers.push("密接"+i+"电话")
       headers.push("密接"+i+"单位")
   }
 
