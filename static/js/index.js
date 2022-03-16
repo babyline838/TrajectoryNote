@@ -133,19 +133,19 @@ function UserGuide(props){
         </DialogTitle>
         <DialogContent dividers>
           <Typography gutterBottom>
-            本应用旨在平时记录行程轨迹与接触人员，为流调高效地提供准确信息。
+            本应用旨在平时记录行程轨迹与接触人员，为快速流调提供辅助信息。
           </Typography>
           <Typography gutterBottom>
-            为保护个人隐私，所有数据均保存在浏览器的本地存储并不向其他地方传输，因此浏览器的隐身模式、退出清空缓存、清空浏览器数据等功能均导致本程序不可使用。
+            为严格保护个人隐私信息，所有数据均保存在浏览器的本地存储内，不出用户终端设备，不上网传输。因此如有浏览器开启隐身模式、退出清空缓存、清空浏览器数据等操作，均可导致本应用记录信息丢失。
           </Typography>
           <Typography gutterBottom>
-            同时，所有数据无备份，删除即不可恢复。需要提供流调信息时请点击右上角“导出”按钮，已填信息将被导出为csv文件。
+            同时，本应用所有数据无备份，删除即不可恢复。需要提供流调信息时，请点击右上角“导出”按钮，已填信息将被导出为csv文件。
           </Typography>
           <Typography gutterBottom>
-            本程序开源，见 https://github.com/babyline838/TrajectoryNote 。同时前端代码未经压缩混淆，可自行审计。
+          本程序开源，前端代码未经压缩混淆，可自行开展安全审计。源代码见  https://github.com/babyline838/TrajectoryNote  。
           </Typography>
           <Typography gutterBottom>
-            感谢大家配合，共同抗疫。
+            感谢大家配合，让我们共同抗疫，胜利属于东川路800号！
           </Typography>
         </DialogContent>
         <DialogActions>
