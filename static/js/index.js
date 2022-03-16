@@ -440,7 +440,7 @@ function EditDialog(props) {
           <Grid container spacing={4}>
             {
               contacts?.map((contact,idx) => (
-              <Grid item key={idx} xs={12} sm={6} md={4} style={{marginTop:'15px'}}>
+              <Grid item key={idx} xs={12} sm={12} md={12} style={{marginTop:'15px'}}>
               <Paper elevation={4}>
                 <ContactRow info={contact} setinfo={(data)=>setcontacts(data)} idx={idx} handleDeleteContact={handleDeleteContactFactory(idx)} updatedata={updatecontacts(idx)}/>
               </Paper></Grid>))
@@ -457,7 +457,7 @@ function EditDialog(props) {
 function show_time(timestr){
   // const date=new Date(timestamp);
   // return date.toLocaleString();
-  return timestr.replace('T',' | ');
+  return timestr.replace('T','  ');
 }
 
 function ContactDisplayItem(props){
@@ -469,6 +469,7 @@ function ContactDisplayItem(props){
 function RecordItem(props) {
   const info=props.info;
   const handleClickEdit=props.editcallback;
+  const handleClickDelete=props.deletecallback;
   const classes=useStyles();
   return (
   <Grid item xs={12} sm={6} md={4}>
@@ -480,6 +481,9 @@ function RecordItem(props) {
           </Typography>
           <IconButton aria-label="edit" color="primary" size='small' onClick={handleClickEdit} style={{display:"inline-flex",float:"right"}}>
             <Icon>edit</Icon>
+          </IconButton>
+          <IconButton aria-label="edit" color="primary" size='small' onClick={handleClickDelete} style={{display:"inline-flex",float:"right",marginRight:theme.spacing(3), }}>
+            <Icon>delete</Icon>
           </IconButton>
         </div>
         <div>
@@ -508,7 +512,7 @@ function RecordItem(props) {
             做什么事: {info.todo}
           </Typography>
           <Typography variant="body1">
-            是否戴了口罩: {info.with_mask?"是":"否"}
+            是否戴口罩: {info.with_mask?"是":"否"}
           </Typography>
           <Typography variant="body1">
             备注: {info.comment}
@@ -519,7 +523,7 @@ function RecordItem(props) {
               info.close_contacts.map((contact,idx)=>(
                 <React.Fragment key={idx}>
                 <ListItem>
-                  <ListItemText primary={contact.name + " | " + (contact.with_mask?"":"未") +" 戴口罩"} style={{color: contact.with_mask?'black':'red'}}/>
+                  <ListItemText primary={contact.name + "  " + (contact.with_mask?"":"未") +" 戴口罩"} style={{color: contact.with_mask?'black':'red'}}/>
                 </ListItem>
                 <Divider />
                 </React.Fragment>
@@ -536,6 +540,7 @@ function Album(props) {
   // const [init,setinit] = React.useState(false);
   const [openAdd, setOpenAdd] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
+  const [openAlert, setOpenAlert] = React.useState(false);
   const [editinfo, setEditinfo] = React.useState({});
   const [recorddata, setrecorddata_impl] = React.useState(props.data);
   // if(!init){
@@ -554,6 +559,10 @@ function Album(props) {
 
   const handleCloseAdd = () => {
     setOpenAdd(false);
+  };
+
+  const handleCloseAlert = () => {
+    setOpenAlert(false);
   };
 
   const append_data = (item) => {
@@ -599,6 +608,13 @@ function Album(props) {
     setOpenEdit(false);
   };
 
+  const handleClickDelete = (id)=>{
+    // setOpenAlert(true);
+    let ret=confirm("确认删除？");
+    if(ret)
+      setrecorddata(recorddata.filter((e,i)=>e.id!=id));
+  }
+
   const classes = useStyles();
 
   return (
@@ -627,7 +643,7 @@ function Album(props) {
                 </CardContent>
               </Card>
             </Grid>
-            {recorddata.slice().reverse().map((info) => (<RecordItem info={info} key={info.id} editcallback={()=>handleClickEdit({...info})} />))}
+            {recorddata.slice().reverse().map((info) => (<RecordItem info={info} key={info.id} editcallback={()=>handleClickEdit({...info})} deletecallback={()=>handleClickDelete(info.id)}/>))}
           </Grid>
         </Container>
       </main>
@@ -656,10 +672,12 @@ function export_records(){
       if (item.close_contacts.length > max_close_contacts_length) max_close_contacts_length = item.close_contacts.length;
       item.time_start=item.time_start.replace('T',' ');
       item.time_end=item.time_end.replace('T',' ');
+      item.with_mask=item.with_mask?"是":"否";
       item.close_contacts.forEach(contact=>{
         delete contact.gender;
         delete contact.telphone;
         delete contact.relation;
+        contact.with_mask=contact.with_mask?"是":"否";
       })
   })
 
