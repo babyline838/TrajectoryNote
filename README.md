@@ -8,9 +8,9 @@
 - [x] 查看记录
 - [x] 编辑记录
 - [x] 记录导出
-- [ ] Date-picker
-- [ ] Date range support
-- [ ] Form validation
+- [x] Date-picker
+- [x] Date range support
+- [ ] ~~Form validation~~
 
 ## Setup
 `python3 server.py`

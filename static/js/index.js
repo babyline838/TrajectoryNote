@@ -32,7 +32,7 @@ const {
   Link,
   Divider,
   Dialog,DialogTitle,MuiDialogTitle,TextField,
-  FormControlLabel
+  FormControlLabel,DialogContent,DialogActions
 } = MaterialUI;
 
 const theme = responsiveFontSizes(createMuiTheme({
@@ -94,14 +94,68 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-function Busy() {
+function JumpAlert(){
   const classes = useStyles();
-  return <Icon className={classes.iconhot}>whatshot</Icon>
+  return (
+    <React.Fragment>
+      <CssBaseline />
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" color="inherit" noWrap className={classes.title}>
+            行程记录本
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <main>
+        <Container className={classes.cardGrid} maxWidth="md">
+          <Typography variant="h6" color="inherit" style={{marginLeft:theme.spacing(2)}}>
+            请使用浏览器打开。<br/>
+            点击右上角的...按钮，选择浏览器打开。
+          </Typography>
+        </Container>
+      </main>
+    </React.Fragment>
+  );
 }
 
-function Free(){
+function UserGuide(props){
   const classes = useStyles();
-  return (<Icon className={classes.iconcold}>ac_unit</Icon>)
+  const { onClose, open } = props;
+  const handleClose = () => {
+    localStorage['visited']='true';
+    onClose();
+  };
+  return (
+    <React.Fragment>
+      <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
+        <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+          用户须知
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography gutterBottom>
+            本应用旨在平时记录行程轨迹与接触人员，为流调高效地提供准确信息。
+          </Typography>
+          <Typography gutterBottom>
+            为保护个人隐私，所有数据均保存在浏览器的本地存储并不向其他地方传输，因此浏览器的隐身模式、退出清空缓存、清空浏览器数据等功能均导致本程序不可使用。
+          </Typography>
+          <Typography gutterBottom>
+            同时，所有数据无备份，删除即不可恢复。需要提供流调信息时请点击右上角“导出”按钮，已填信息将被导出为csv文件。
+          </Typography>
+          <Typography gutterBottom>
+            本程序开源，见 https://github.com/babyline838/TrajectoryNote 。同时前端代码未经压缩混淆，可自行审计。
+          </Typography>
+          <Typography gutterBottom>
+            感谢大家配合，共同抗疫。
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={handleClose} color="primary">
+            确认
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </React.Fragment>
+  );
 }
 
 function dateFormat(fmt, date) {
@@ -540,7 +594,7 @@ function Album(props) {
   // const [init,setinit] = React.useState(false);
   const [openAdd, setOpenAdd] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
-  const [openAlert, setOpenAlert] = React.useState(false);
+  const [openGuide, setOpenGuide] = React.useState(!props.visited);
   const [editinfo, setEditinfo] = React.useState({});
   const [recorddata, setrecorddata_impl] = React.useState(props.data);
   // if(!init){
@@ -561,8 +615,8 @@ function Album(props) {
     setOpenAdd(false);
   };
 
-  const handleCloseAlert = () => {
-    setOpenAlert(false);
+  const handleCloseGuide = () => {
+    setOpenGuide(false);
   };
 
   const append_data = (item) => {
@@ -649,6 +703,7 @@ function Album(props) {
       </main>
       <AddDialog open={openAdd} onClose={handleCloseAdd} updatecallback={append_data}/>
       <EditDialog open={openEdit} onClose={handleCloseEdit} updatecallback={modify_data_save} updatedata={modify_data} setdata={set_data} defaultinfo={editinfo} />
+      <UserGuide open={openGuide} onClose={handleCloseGuide}/>
     </React.Fragment>
   );
 }
@@ -769,6 +824,7 @@ function export_records(){
   exportCSVFile(headers, data, '行程记录'); // call the exportCSVFile() function to process the JSON and trigger the download
 }
 
+let visited=JSON.parse(localStorage['visited']??"false");
 let data=JSON.parse(localStorage['contact_info']??"[]");
 // let data=[
 //   {
@@ -800,13 +856,22 @@ let data=JSON.parse(localStorage['contact_info']??"[]");
 //     ]
 //   }
 // ]
-
+console.log(visited);
 let next_record_id=data.length==0?0:(Math.max(...(data.map(e=>e.id)))+1);
 
-
-ReactDOM.render(
-  <ThemeProvider theme={theme}>
-    <Album data={data}/>
-  </ThemeProvider>,
- document.querySelector('#container')
-)
+let ua = navigator.userAgent.toLowerCase();
+if(ua.match(/MicroMessenger/i)=="micromessenger") {
+  ReactDOM.render(
+    <ThemeProvider theme={theme}>
+      <JumpAlert/>
+    </ThemeProvider>,
+   document.querySelector('#container')
+  )
+} else {
+  ReactDOM.render(
+    <ThemeProvider theme={theme}>
+      <Album data={data} visited={visited}/>
+    </ThemeProvider>,
+   document.querySelector('#container')
+  )
+}
