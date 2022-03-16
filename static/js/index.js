@@ -255,6 +255,14 @@ function AddDialog(props) {
         with_mask:false,
         comment:"",
       });
+      setcontacts([{
+        name:"",
+        relation:"",
+        with_mask:false,
+        gender:"",
+        telphone:"",
+        organization:"",
+      }]);
       onClose();
     } else {
       // set err
@@ -549,7 +557,7 @@ function Album(props) {
   };
 
   const append_data = (item) => {
-    setrecorddata([...recorddata,item]);
+    setrecorddata([...recorddata,JSON.parse(JSON.stringify(item))]);
     next_record_id+=1;
   };
 
