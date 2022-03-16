@@ -363,7 +363,6 @@ function EditDialog(props) {
     setcontacts(newcontacts);
   };
   const setcontacts = (list)=>{
-    console.log(list)
     updatedata({...info,close_contacts:list});
   };
 
@@ -583,8 +582,6 @@ function Album(props) {
 
   const classes = useStyles();
 
-  console.log(recorddata)
-
   return (
     <React.Fragment>
       <CssBaseline />
@@ -637,7 +634,9 @@ function export_records(){
   var max_close_contacts_length = 1;
 
   data.forEach( (item) => {
-      if (item.close_contacts.length > max_close_contacts_length) max_close_contacts_length = item.close_contacts.length
+      if (item.close_contacts.length > max_close_contacts_length) max_close_contacts_length = item.close_contacts.length;
+      item.time_start=item.time_start.replace('T',' ');
+      item.time_end=item.time_end.replace('T',' ');
   })
 
   const headers = [
