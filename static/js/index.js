@@ -437,10 +437,10 @@ function EditDialog(props) {
   );
 }
 
-function show_time(timestamp){
+function show_time(timestr){
   // const date=new Date(timestamp);
   // return date.toLocaleString();
-  return String(timestamp)
+  return timestr.replace('T',' | ');
 }
 
 function ContactDisplayItem(props){
