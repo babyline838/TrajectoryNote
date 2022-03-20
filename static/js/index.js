@@ -200,7 +200,6 @@ function ContactRow(props){
       newinfo[event.target.id]=event.target.value;
       newinfo.time_end=event.target.value;
     } else {
-      console.log(event.target)
       if(event.target.id){
         newinfo[event.target.id]=event.target.value;
       }
@@ -771,7 +770,6 @@ function export_records(){
         contact.contact_time=String(contact.contact_time)+"分钟";
       })
   })
-  console.log(data)
   const headers = [
       "编号",
       "开始时间",
