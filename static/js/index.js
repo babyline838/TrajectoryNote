@@ -32,7 +32,9 @@ const {
   Link,
   Divider,
   Dialog,DialogTitle,MuiDialogTitle,TextField,
-  FormControlLabel,DialogContent,DialogActions
+  FormControlLabel,DialogContent,DialogActions,
+  FormControl,InputLabel,Select,MenuItem,FormLabel,
+  RadioGroup,Radio,InputAdornment,clsx
 } = MaterialUI;
 
 const theme = responsiveFontSizes(createMuiTheme({
@@ -194,15 +196,24 @@ function ContactRow(props){
   const classes = useStyles();
   const handleChange = (event) => {
     let newinfo=props.info;
-    if(event.target.id!="with_mask"){
+    if(event.target.id=="time_start"){
       newinfo[event.target.id]=event.target.value;
+      newinfo.time_end=event.target.value;
     } else {
-      newinfo[event.target.id]=event.target.checked;
+      console.log(event.target)
+      if(event.target.id){
+        newinfo[event.target.id]=event.target.value;
+      }
+      else{
+        newinfo[event.target.name]=event.target.value;
+        if(event.target.name=='with_mask')
+          newinfo[event.target.name] = newinfo[event.target.name]=='true'
+      }
     }
     props.updatedata(newinfo);
   };
   return (
-    <Grid container spacing={2} style={{marginLeft:theme.spacing(1)}}>
+    <Grid container spacing={1} style={{marginLeft:theme.spacing(1)}}>
     <Grid item xs={4} sm={4} md={4}>
       <TextField
         id="name"
@@ -211,37 +222,52 @@ function ContactRow(props){
         margin="dense"
         onChange={handleChange}
     /></Grid>
-    <Grid item xs={5} sm={5} md={5} style={{alignSelf:'flex-end'}}>
-      <FormControlLabel
-        control={
-          <Checkbox  checked={props.info.with_mask} disableRipple color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
-        }
-        label="对方已戴口罩"
-    /></Grid>
-    <Grid item xs={2} sm={2} md={2} style={{marginLeft:"-1.2em"}}>
-      <IconButton  disableRipple color="primary" onClick={()=>{props.handleDeleteContact();}}>
+
+    <Grid item xs={6} sm={6} md={6} style={{alignSelf:'flex-end',marginTop:theme.spacing(1)}}>
+      <div>
+      <FormControl component="fieldset" style={{flexDirection:'row'}}>
+        <FormLabel component="legend" style={{paddingRight:theme.spacing(2)}}>对方已戴口罩</FormLabel>
+        <RadioGroup row name="with_mask" id="with_mask" value={props.info.with_mask} onChange={handleChange}>
+          <FormControlLabel name="with_mask" value={true} control={<Radio />} label="是" />
+          <FormControlLabel name="with_mask" value={false} control={<Radio />} label="否" />
+        </RadioGroup>
+      </FormControl>
+      </div>
+    </Grid>
+
+    <Grid item xs={1} sm={1} md={1} style={{marginLeft:"-1.6em"}}>
+      <IconButton color="primary" onClick={()=>{props.handleDeleteContact();}}>
         <Icon style={{fontSize:'1.2em'}}>delete</Icon>
       </IconButton>
     </Grid>
 
-
+    <Grid item xs={4} sm={4} md={4}>
+      <TextField
+        id="contact_time"
+        label="接触时长"
+        type='number'
+        value={props.info.contact_time}
+        className={classes.textField}
+        InputProps={{startAdornment:(<InputAdornment position="start" style={{marginRight:0}}/>),endAdornment:(<InputAdornment position="end">分钟</InputAdornment>)}}
+        onChange={handleChange}
+    /></Grid>
+    <Grid item xs={5} sm={5} md={5} style={{alignSelf: 'center'}}>
+      <FormControl fullWidth className={classes.formControl}>
+        <InputLabel>接触距离</InputLabel>
+        <Select
+          label="接触距离"
+          id="contact_distance"
+          name="contact_distance"
+          value={props.info.contact_distance}
+          onChange={handleChange}
+        >
+          <MenuItem name="contact_distance" value={1}>小于1米</MenuItem>
+          <MenuItem name="contact_distance" value={2}>1~2米</MenuItem>
+          <MenuItem name="contact_distance" value={3}>大于2米</MenuItem>
+        </Select>
+      </FormControl>
+    </Grid>
     {/**
-    <Grid item xs={6} sm={4} md={3}>
-      <TextField
-        id="relation"
-        label="关系"
-        value={props.info.relation}
-        margin="dense"
-        onChange={handleChange}
-    /></Grid>
-    <Grid item xs={6} sm={4} md={3}>
-      <TextField
-        id="gender"
-        label="性别"
-        value={props.info.gender}
-        margin="dense"
-        onChange={handleChange}
-    /></Grid>
     <Grid item xs={6} sm={4} md={3}>
       <TextField
         id="telphone"
@@ -251,7 +277,7 @@ function ContactRow(props){
         onChange={handleChange}
     /></Grid>
     **/}
-    <Grid item xs={10} sm={10} md={10}>
+    <Grid item xs={9} sm={9} md={9}>
       <TextField
         fullWidth
         id="organization"
@@ -284,8 +310,8 @@ function AddDialog(props) {
     name:"",
     relation:"",
     with_mask:false,
-    gender:"",
-    telphone:"",
+    contact_time:null,
+    contact_distance:"",
     organization:"",
   }]);
 
@@ -313,8 +339,8 @@ function AddDialog(props) {
         name:"",
         relation:"",
         with_mask:false,
-        gender:"",
-        telphone:"",
+        contact_time:null,
+        contact_distance:"",
         organization:"",
       }]);
       onClose();
@@ -327,8 +353,8 @@ function AddDialog(props) {
       name:"",
       relation:"",
       with_mask:false,
-      gender:"",
-      telphone:"",
+      contact_time:null,
+      contact_distance:"",
       organization:"",
     }]);
   };
@@ -345,13 +371,18 @@ function AddDialog(props) {
   }
   const handleChange = (event) =>{
     let newinfo=info;
-    if(event.target.id=="with_mask"){
-      newinfo[event.target.id]=event.target.checked;
-    } else if(event.target.id=="time_start"){
+    if(event.target.id=="time_start"){
       newinfo[event.target.id]=event.target.value;
       newinfo.time_end=event.target.value;
     } else {
-      newinfo[event.target.id]=event.target.value;
+      if(event.target.id){
+        newinfo[event.target.id]=event.target.value;
+      }
+      else{
+        newinfo[event.target.name]=event.target.value;
+        if(event.target.name=='with_mask')
+          newinfo[event.target.name] = newinfo[event.target.name]=='true'
+      }
     }
     setinfo({...newinfo});
   };
@@ -368,15 +399,16 @@ function AddDialog(props) {
       <form className={classes.form} noValidate autoComplete="off" style={{textAlign:'center'}}>
         <TextField fullWidth required type="datetime-local" className={classes.textfield} value={info.time_start} onChange={handleChange} name="time_start" id="time_start" label="开始时间"/>
         <TextField fullWidth required type="datetime-local" className={classes.textfield} value={info.time_end} onChange={handleChange} name="time_end" id="time_end" label="结束时间"/>
-        <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" label="地点" />
+        <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" helperText="在某地 或 从某地到某地" label="地点" />
         <TextField fullWidth required className={classes.textfield} value={info.traffic} onChange={handleChange} name="traffic" id="traffic" label="交通方式" />
         <TextField fullWidth required className={classes.textfield} value={info.todo} onChange={handleChange} name="todo" id="todo" label="做什么事" />
-        <FormControlLabel
-          control={
-            <Checkbox  checked={info.with_mask} color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
-          }
-          label="已戴口罩"
-        />
+        <FormControl component="fieldset" style={{flexDirection:'row'}}>
+          <FormLabel component="p" style={{marginRight:theme.spacing(2)}}>已戴口罩</FormLabel>
+          <RadioGroup row name="with_mask" id="with_mask" value={info.with_mask} onChange={handleChange}>
+            <FormControlLabel name="with_mask" value={true} control={<Radio />} label="是" />
+            <FormControlLabel name="with_mask" value={false} control={<Radio />} label="否" />
+          </RadioGroup>
+        </FormControl>
         <TextField fullWidth className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
 
         <List>
@@ -428,8 +460,8 @@ function EditDialog(props) {
       name:"",
       relation:"",
       with_mask:false,
-      gender:"",
-      telphone:"",
+      contact_time:null,
+      contact_distance:"",
       organization:"",
     }];
     setcontacts(newcontacts);
@@ -453,13 +485,18 @@ function EditDialog(props) {
   }
   const handleChange = (event) =>{
     let newinfo=info;
-    if(event.target.id=="with_mask"){
-      newinfo[event.target.id]=event.target.checked;
-    } else if(event.target.id=="time_start"){
+    if(event.target.id=="time_start"){
       newinfo[event.target.id]=event.target.value;
       newinfo.time_end=event.target.value;
     } else {
-      newinfo[event.target.id]=event.target.value;
+      if(event.target.id){
+        newinfo[event.target.id]=event.target.value;
+      }
+      else{
+        newinfo[event.target.name]=event.target.value;
+        if(event.target.name=='with_mask')
+          newinfo[event.target.name] = newinfo[event.target.name]=='true'
+      }
     }
     updatedata(newinfo);
   };
@@ -479,15 +516,13 @@ function EditDialog(props) {
         <TextField fullWidth required className={classes.textfield} value={info.location} onChange={handleChange} name="location" id="location" label="地点" />
         <TextField fullWidth required className={classes.textfield} value={info.traffic} onChange={handleChange} name="traffic" id="traffic" label="交通方式" />
         <TextField fullWidth required className={classes.textfield} value={info.todo} onChange={handleChange} name="todo" id="todo" label="做什么事" />
-        {
-          // <TextField fullWidth required className={classes.textfield} value={info.with_mask?"是":"否"} onChange={handleChange} name="with_mask" id="with_mask" label="是否戴口罩" />
-        }
-        <FormControlLabel
-          control={
-            <Checkbox  checked={info.with_mask} color="primary" onChange={handleChange}  name="with_mask" id="with_mask"  inputProps={{ 'aria-label': 'primary checkbox' }}/>
-          }
-          label="已戴口罩"
-        />
+        <FormControl component="fieldset" style={{flexDirection:'row'}}>
+          <FormLabel component="p" style={{marginRight:theme.spacing(2)}}>已戴口罩</FormLabel>
+          <RadioGroup row name="with_mask" id="with_mask" value={info.with_mask} onChange={handleChange}>
+            <FormControlLabel name="with_mask" value={true} control={<Radio />} label="是" />
+            <FormControlLabel name="with_mask" value={false} control={<Radio />} label="否" />
+          </RadioGroup>
+        </FormControl>
         <TextField fullWidth className={classes.textfield} value={info.comment} onChange={handleChange} name="comment" id="comment" label="备注" />
 
         <List>
@@ -709,7 +744,6 @@ function Album(props) {
   );
 }
 
-// TODO: Format output data into csv
 function export_records_json(){
   let data=localStorage['contact_info'];
   let uri = 'data:text/json;charset=utf-8,' + encodeURIComponent(data);
@@ -731,13 +765,13 @@ function export_records(){
       item.with_mask=item.with_mask?"是":"否";
       item.id+=1;
       item.close_contacts.forEach(contact=>{
-        delete contact.gender;
-        delete contact.telphone;
         delete contact.relation;
         contact.with_mask=contact.with_mask?"是":"否";
+        contact.contact_distance={1:"小于1米",2:"1至2米",3:"大于2米"}[contact.contact_distance];
+        contact.contact_time=String(contact.contact_time)+"分钟";
       })
   })
-
+  console.log(data)
   const headers = [
       "编号",
       "开始时间",
@@ -751,11 +785,11 @@ function export_records(){
 
   for (let i = 0; i < max_close_contacts_length; i++) {
       headers.push("密接"+(i+1)+"姓名")
-      // headers.push("密接"+i+"关系")
       headers.push("密接"+(i+1)+"是否带口罩")
-      // headers.push("密接"+i+"性别")
-      // headers.push("密接"+i+"电话")
+      headers.push("密接"+(i+1)+"接触时间")
+      headers.push("密接"+(i+1)+"接触距离")
       headers.push("密接"+(i+1)+"单位")
+      // headers.push("密接"+i+"电话")
   }
 
   function convertToCSV(objArray) {
@@ -858,7 +892,6 @@ let data=JSON.parse(localStorage['contact_info']??"[]");
 //     ]
 //   }
 // ]
-console.log(visited);
 let next_record_id=data.length==0?0:(Math.max(...(data.map(e=>e.id)))+1);
 
 let ua = navigator.userAgent.toLowerCase();
